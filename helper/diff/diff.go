@@ -2,8 +2,37 @@ package diff
 
 import (
 	"github.com/pusinc/golang-support/helper/contain"
+	"github.com/pusinc/golang-support/helper/uniq"
 	"reflect"
 )
+
+func Slice(x, y reflect.Value) reflect.Value {
+	leftSlice := x.Slice(0, 0)
+	rightSlice := x.Slice(0, 0)
+
+	xLength := x.Len()
+	for i := 0; i < xLength; i++ {
+		v := x.Index(i)
+		if contain.Slice(y, v) == false {
+			leftSlice = reflect.Append(leftSlice, v)
+		}
+	}
+
+	yLength := y.Len()
+	for i := 0; i < yLength; i++ {
+		v := y.Index(i)
+		if contain.Slice(x, v) == false {
+			rightSlice = reflect.Append(rightSlice, v)
+		}
+	}
+
+	rightSliceLength := rightSlice.Len()
+	for i := 0; i < rightSliceLength; i++ {
+		leftSlice = reflect.Append(leftSlice, rightSlice.Index(i))
+	}
+
+	return uniq.Slice(leftSlice)
+}
 
 func Interface(typ reflect.Type, x interface{}, y interface{}) (reflect.Value, reflect.Value) {
 	leftSlice := reflect.MakeSlice(typ, 0, 0)

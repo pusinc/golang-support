@@ -2,6 +2,23 @@ package uniq
 
 import "reflect"
 
+func Slice(value reflect.Value) reflect.Value {
+	length := value.Len()
+	seen := make(map[interface{}]struct{}, length)
+	j := 0
+
+	for i := 0; i < length; i++ {
+		v := value.Index(i)
+		if _, ok := seen[v.Interface()]; ok {
+			continue
+		}
+		seen[v.Interface()] = struct{}{}
+		value.Index(j).Set(v)
+		j++
+	}
+	return value.Slice(0, j)
+}
+
 func Interface(typ reflect.Type, a interface{}) reflect.Value {
 	mapValue := reflect.ValueOf(true)
 	aValue := reflect.ValueOf(a)

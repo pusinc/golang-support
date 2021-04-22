@@ -19,3 +19,14 @@ func Interface(s interface{}, v interface{}) bool {
 	}
 	return false
 }
+
+func Slice(s reflect.Value, v reflect.Value) bool {
+	length := s.Len()
+	for i := 0; i < length; i++ {
+		vv := s.Index(i)
+		if reflect.DeepEqual(vv.Interface(), v.Interface()) {
+			return true
+		}
+	}
+	return false
+}

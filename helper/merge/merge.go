@@ -2,7 +2,7 @@ package merge
 
 import "reflect"
 
-func Slice(typ reflect.Type, data []reflect.Value) reflect.Value {
+func Slice(typ reflect.Type, data ...reflect.Value) reflect.Value {
 	result := reflect.MakeSlice(typ, 0, 0)
 	for _, datum := range data {
 		for i := 0; i < datum.Len(); i++ {

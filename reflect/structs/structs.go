@@ -2,6 +2,7 @@ package structs
 
 import (
 	"fmt"
+	"github.com/pusinc/golang-support/helper/intersect"
 	"reflect"
 )
 
@@ -96,4 +97,19 @@ func Fields(dst interface{}) ([]string, error) {
 		result = append(result, dstFieldType.Name)
 	}
 	return result, nil
+}
+
+func FieldsDiff(dst, src, reference interface{}) ([]string, error) {
+	_, differenceFields, err := Difference(dst, src)
+	if err != nil {
+		return nil, err
+	}
+	if len(differenceFields) != 0 {
+		canUpdateFields, err := Fields(reference)
+		if err != nil {
+			return nil, err
+		}
+		differenceFields = intersect.String(differenceFields, canUpdateFields)
+	}
+	return differenceFields, nil
 }

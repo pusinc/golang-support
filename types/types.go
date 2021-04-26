@@ -164,7 +164,7 @@ func (m MapStringInt) Value() (driver.Value, error) {
 }
 
 func (m *MapStringInt) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (m MapStringInt8) Value() (driver.Value, error) {
@@ -172,7 +172,7 @@ func (m MapStringInt8) Value() (driver.Value, error) {
 }
 
 func (m *MapStringInt8) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (m MapStringInt16) Value() (driver.Value, error) {
@@ -180,7 +180,7 @@ func (m MapStringInt16) Value() (driver.Value, error) {
 }
 
 func (m *MapStringInt16) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (m MapStringInt32) Value() (driver.Value, error) {
@@ -188,7 +188,7 @@ func (m MapStringInt32) Value() (driver.Value, error) {
 }
 
 func (m *MapStringInt32) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (m MapStringInt64) Value() (driver.Value, error) {
@@ -196,7 +196,7 @@ func (m MapStringInt64) Value() (driver.Value, error) {
 }
 
 func (m *MapStringInt64) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (m MapStringUint) Value() (driver.Value, error) {
@@ -204,7 +204,7 @@ func (m MapStringUint) Value() (driver.Value, error) {
 }
 
 func (m *MapStringUint) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (m MapStringUint8) Value() (driver.Value, error) {
@@ -212,7 +212,7 @@ func (m MapStringUint8) Value() (driver.Value, error) {
 }
 
 func (m *MapStringUint8) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (m MapStringUint16) Value() (driver.Value, error) {
@@ -220,7 +220,7 @@ func (m MapStringUint16) Value() (driver.Value, error) {
 }
 
 func (m *MapStringUint16) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (m MapStringUint32) Value() (driver.Value, error) {
@@ -228,7 +228,7 @@ func (m MapStringUint32) Value() (driver.Value, error) {
 }
 
 func (m *MapStringUint32) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (m MapStringUint64) Value() (driver.Value, error) {
@@ -236,7 +236,7 @@ func (m MapStringUint64) Value() (driver.Value, error) {
 }
 
 func (m *MapStringUint64) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (m MapStringFloat32) Value() (driver.Value, error) {
@@ -244,7 +244,7 @@ func (m MapStringFloat32) Value() (driver.Value, error) {
 }
 
 func (m *MapStringFloat32) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (m MapStringFloat64) Value() (driver.Value, error) {
@@ -252,7 +252,7 @@ func (m MapStringFloat64) Value() (driver.Value, error) {
 }
 
 func (m *MapStringFloat64) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (m MapStringString) Value() (driver.Value, error) {
@@ -260,7 +260,7 @@ func (m MapStringString) Value() (driver.Value, error) {
 }
 
 func (m *MapStringString) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (m MapStringInterface) Value() (driver.Value, error) {
@@ -268,7 +268,7 @@ func (m MapStringInterface) Value() (driver.Value, error) {
 }
 
 func (m *MapStringInterface) Scan(v interface{}) error {
-	return json.Unmarshal(v.([]byte), m)
+	return jsonParseForMap(v.([]byte), m)
 }
 
 func (t NullTime) Value() (driver.Value, error) {
@@ -466,8 +466,17 @@ func (n NullString) MarshalJSON() ([]byte, error) {
 
 func jsonArrayString(v interface{}) (driver.Value, error) {
 	r, err := json.Marshal(v)
-	if err != nil || string(r) == "null" {
+	str := string(r)
+	if err != nil || str == "null" || str == "{}" {
 		r = []byte("[]")
 	}
 	return r, nil
+}
+
+func jsonParseForMap(v []byte, dst interface{}) error {
+	strV := string(v)
+	if strV == "[]" || strV == "{}" || strV == "null" {
+		return nil
+	}
+	return json.Unmarshal(v, dst)
 }

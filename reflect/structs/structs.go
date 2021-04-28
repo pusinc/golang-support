@@ -4,7 +4,12 @@ import (
 	"fmt"
 	"github.com/pusinc/golang-support/helper/intersect"
 	"reflect"
+	"strings"
 )
+
+type GormNamer interface {
+	ColumnName(table, column string) string
+}
 
 func Assign(dst interface{}, src interface{}) error {
 	dstType, dstValue := reflect.TypeOf(dst), reflect.ValueOf(dst)
@@ -112,4 +117,39 @@ func FieldsDiff(dst, src, reference interface{}) ([]string, error) {
 		differenceFields = intersect.String(differenceFields, canUpdateFields)
 	}
 	return differenceFields, nil
+}
+
+func GormMapToStruct(data map[string]interface{}, dst interface{}, namer GormNamer) (interface{}, error) {
+	dstValue := reflect.ValueOf(dst)
+	dstType := reflect.TypeOf(dst)
+	if dstValue.Type().Kind() != reflect.Ptr {
+		return nil, fmt.Errorf("dst must be %s type", reflect.Ptr)
+	}
+	dstValue = dstValue.Elem()
+	dstType = dstType.Elem()
+	if dstValue.Type().Kind() != reflect.Struct {
+		return nil, fmt.Errorf("dst must be %s type", reflect.Struct)
+	}
+	for i := 0; i < dstValue.NumField(); i++ {
+		fieldValue := dstValue.Field(i)
+		if !fieldValue.CanSet() {
+			continue
+		}
+		fieldType := dstType.Field(i)
+		columnName := namer.ColumnName("", fieldType.Name)
+		if gormTag, ok := fieldType.Tag.Lookup("gorm"); ok {
+			gormTagSlice := strings.Split(gormTag, ",")
+			for _, s := range gormTagSlice {
+				ss := strings.Split(s, ":")
+				if ss[0] == "column" && ss[1] != "" {
+					columnName = ss[1]
+					break
+				}
+			}
+		}
+		if value, ok := data[columnName]; ok {
+			fieldValue.Set(reflect.ValueOf(value))
+		}
+	}
+	return dstValue.Interface(), nil
 }

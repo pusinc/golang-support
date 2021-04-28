@@ -7,24 +7,19 @@ func Interface(s interface{}, v interface{}) bool {
 	if !ok {
 		sValue = reflect.ValueOf(s)
 	}
+	if sValue.Type().Kind() == reflect.Ptr {
+		sValue = sValue.Elem()
+	}
 	vValue, ok := v.(reflect.Value)
 	if !ok {
 		vValue = reflect.ValueOf(v)
 	}
+	if vValue.Type().Kind() == reflect.Ptr {
+		vValue = vValue.Elem()
+	}
 	for i := 0; i < sValue.Len(); i++ {
 		vv := sValue.Index(i)
-		if reflect.DeepEqual(vv, vValue) {
-			return true
-		}
-	}
-	return false
-}
-
-func Slice(s reflect.Value, v reflect.Value) bool {
-	length := s.Len()
-	for i := 0; i < length; i++ {
-		vv := s.Index(i)
-		if reflect.DeepEqual(vv.Interface(), v.Interface()) {
+		if reflect.DeepEqual(vv.Interface(), vValue.Interface()) {
 			return true
 		}
 	}

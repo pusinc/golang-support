@@ -30,7 +30,7 @@ func Interface(x interface{}, y interface{}) reflect.Value {
 	}
 	for i := 0; i < yValue.Len(); i++ {
 		v := yValue.Index(i)
-		if _, ok := hash[v.Interface()]; !ok {
+		if _, ok := hash[v.Interface()]; ok {
 			set = reflect.Append(set, v)
 		}
 	}

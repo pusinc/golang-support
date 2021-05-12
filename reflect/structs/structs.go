@@ -119,16 +119,16 @@ func FieldsDiff(dst, src, reference interface{}) ([]string, error) {
 	return differenceFields, nil
 }
 
-func GormMapToStruct(data map[string]interface{}, dst interface{}, namer GormNamer) (interface{}, error) {
+func GormMapToStruct(data map[string]interface{}, dst interface{}, namer GormNamer) (interface{}, map[string]interface{}, error) {
 	dstValue := reflect.ValueOf(dst)
 	dstType := reflect.TypeOf(dst)
 	if dstValue.Type().Kind() != reflect.Ptr {
-		return nil, fmt.Errorf("dst must be %s type", reflect.Ptr)
+		return nil, nil, fmt.Errorf("dst must be %s type", reflect.Ptr)
 	}
 	dstValue = dstValue.Elem()
 	dstType = dstType.Elem()
 	if dstValue.Type().Kind() != reflect.Struct {
-		return nil, fmt.Errorf("dst must be %s type", reflect.Struct)
+		return nil, nil, fmt.Errorf("dst must be %s type", reflect.Struct)
 	}
 	for i := 0; i < dstValue.NumField(); i++ {
 		fieldValue := dstValue.Field(i)
@@ -149,7 +149,8 @@ func GormMapToStruct(data map[string]interface{}, dst interface{}, namer GormNam
 		}
 		if value, ok := data[columnName]; ok {
 			fieldValue.Set(reflect.ValueOf(value))
+			delete(data, columnName)
 		}
 	}
-	return dstValue.Interface(), nil
+	return dstValue.Interface(), data, nil
 }

@@ -119,6 +119,21 @@ func FieldsDiff(dst, src, reference interface{}) ([]string, error) {
 	return differenceFields, nil
 }
 
+func GormColumnName(st reflect.StructField, namer GormNamer) string {
+	columnName := namer.ColumnName("", st.Name)
+	if gormTag, ok := st.Tag.Lookup("gorm"); ok {
+		gormTagSlice := strings.Split(gormTag, ",")
+		for _, s := range gormTagSlice {
+			ss := strings.Split(s, ":")
+			if ss[0] == "column" && ss[1] != "" {
+				columnName = ss[1]
+				break
+			}
+		}
+	}
+	return columnName
+}
+
 func GormMapToStruct(data map[string]interface{}, dst interface{}, namer GormNamer) (interface{}, map[string]interface{}, error) {
 	dstValue := reflect.ValueOf(dst)
 	dstType := reflect.TypeOf(dst)
@@ -136,17 +151,7 @@ func GormMapToStruct(data map[string]interface{}, dst interface{}, namer GormNam
 			continue
 		}
 		fieldType := dstType.Field(i)
-		columnName := namer.ColumnName("", fieldType.Name)
-		if gormTag, ok := fieldType.Tag.Lookup("gorm"); ok {
-			gormTagSlice := strings.Split(gormTag, ",")
-			for _, s := range gormTagSlice {
-				ss := strings.Split(s, ":")
-				if ss[0] == "column" && ss[1] != "" {
-					columnName = ss[1]
-					break
-				}
-			}
-		}
+		columnName := GormColumnName(fieldType, namer)
 		if value, ok := data[columnName]; ok {
 			fieldValue.Set(reflect.ValueOf(value))
 			delete(data, columnName)

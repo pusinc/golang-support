@@ -39,7 +39,11 @@ type (
 	MapStringString    map[string]string
 	MapStringInterface map[string]interface{}
 
-	NullTime    sql.NullTime
+	NullTime sql.NullTime
+	NullDate struct {
+		Time  time.Time
+		Valid bool
+	}
 	NullBool    sql.NullBool
 	NullFloat64 sql.NullFloat64
 	NullInt32   sql.NullInt32
@@ -302,6 +306,39 @@ func (t NullTime) MarshalJSON() ([]byte, error) {
 		return json.Marshal(nil)
 	}
 	return json.Marshal(t.Time)
+}
+
+func (d NullDate) Value() (driver.Value, error) {
+	if !d.Valid {
+		return nil, nil
+	}
+	return d.Time, nil
+}
+
+func (d *NullDate) Scan(v interface{}) error {
+	return (*sql.NullTime)(d).Scan(v)
+}
+
+func (d *NullDate) UnmarshalJSON(v []byte) error {
+	strV := string(v)
+	if strV == "null" {
+		d.Valid = false
+		return nil
+	}
+	parsedTime, err := time.ParseInLocation(`"2006-01-02"`, strV, time.Local)
+	if err != nil {
+		d.Valid = false
+		return err
+	}
+	d.Time, d.Valid = parsedTime, true
+	return err
+}
+
+func (d NullDate) MarshalJSON() ([]byte, error) {
+	if !d.Valid {
+		return json.Marshal(nil)
+	}
+	return json.Marshal(d.Time)
 }
 
 func (n NullBool) Value() (driver.Value, error) {

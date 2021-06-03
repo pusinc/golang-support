@@ -288,7 +288,7 @@ func (t *NullTime) Scan(v interface{}) error {
 
 func (t *NullTime) UnmarshalJSON(v []byte) error {
 	strV := string(v)
-	if strV == "null" {
+	if strV == "null" || strV == "" {
 		t.Valid = false
 		return nil
 	}
@@ -321,7 +321,7 @@ func (d *NullDate) Scan(v interface{}) error {
 
 func (d *NullDate) UnmarshalJSON(v []byte) error {
 	strV := string(v)
-	if strV == "null" {
+	if strV == "null" || strV == "" {
 		d.Valid = false
 		return nil
 	}

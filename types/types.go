@@ -343,7 +343,7 @@ func (d NullDate) MarshalJSON() ([]byte, error) {
 
 func (n NullBool) Value() (driver.Value, error) {
 	if !n.Valid {
-		return nil, nil
+		return false, nil
 	}
 	return n.Bool, nil
 }
@@ -354,7 +354,7 @@ func (n *NullBool) Scan(v interface{}) error {
 
 func (n *NullBool) UnmarshalJSON(v []byte) error {
 	strV := string(v)
-	if strV == "null" {
+	if strV == "null" || strV == "" {
 		n.Valid = false
 		return nil
 	}
@@ -387,7 +387,7 @@ func (n *NullFloat64) Scan(v interface{}) error {
 
 func (n *NullFloat64) UnmarshalJSON(v []byte) error {
 	strV := string(v)
-	if strV == "null" {
+	if strV == "null" || strV == "" {
 		n.Valid = false
 		return nil
 	}
@@ -420,7 +420,7 @@ func (n *NullInt32) Scan(v interface{}) error {
 
 func (n *NullInt32) UnmarshalJSON(v []byte) error {
 	strV := string(v)
-	if strV == "null" {
+	if strV == "null" || strV == "" {
 		n.Valid = false
 		return nil
 	}
@@ -453,7 +453,7 @@ func (n *NullInt64) Scan(v interface{}) error {
 
 func (n *NullInt64) UnmarshalJSON(v []byte) error {
 	strV := string(v)
-	if strV == "null" {
+	if strV == "null" || strV == "" {
 		n.Valid = false
 		return nil
 	}
